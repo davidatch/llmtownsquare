@@ -1,0 +1,13 @@
+{
+  "name": "llmtownsquare",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local bridge between Codex's native task protocol and Claude Code's native cross-session messaging, with a web inspector.",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test test/*.test.js"
+  },
+  "engines": { "node": ">=20" },
+  "license": "Apache-2.0"
+}
