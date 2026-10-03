@@ -269,6 +269,31 @@ test('an uncertain steering outcome is never duplicated into the durable queue',
   await codex.stop();
 });
 
+test('a Desktop protocol rejection queues the message and reports why steering failed', async (t) => {
+  const { CodexSessions } = require('../lib/codex-session');
+  const target = nativeThread({ name: 'target' });
+  const client = new FakeCodexClient([target]);
+  const rejected = new Error('Invalid app tool request');
+  rejected.deliveryStage = 'rejected';
+  const codex = new CodexSessions({
+    client,
+    steeringHelper: { sendMessage: async () => { throw rejected; } },
+  });
+  t.after(() => codex.stop());
+  const warnings = [];
+  codex.on('warning', (message) => warnings.push(message));
+  await codex.start();
+  const result = await codex.deliver(codex.get('target'), {
+    text: 'keep this message',
+    sourceThreadId: 'claude-proxy-thread-id',
+    steer: true,
+  });
+  assert.strictEqual(result.delivery, 'queued');
+  assert.strictEqual(client.queuedMessages.length, 1);
+  assert.strictEqual(warnings.length, 1);
+  assert.match(warnings[0], /steering unavailable; using durable queue: Invalid app tool request/);
+});
+
 test('provider selects the current delegation without replaying older turns', () => {
   const message = (text) => ({
     type: 'message',

@@ -96,6 +96,11 @@ After upgrading an already-running Codex Desktop session from a version without 
 restart Desktop when its active work is safe to interrupt so its existing hidden helper reloads.
 Until then, Claude-to-Codex delivery remains safe and uses the durable queue fallback.
 
+The Desktop helper sends `callerSource: "codex"` for its proxy task's app-tool requests. Newer
+Desktop versions reject requests without this field as `Invalid app tool request`. If steering
+falls back to the durable queue, the traffic log records the rejection reason. A running helper
+must reload after updating its code; restarting only the relay does not reload Desktop's helper.
+
 To use a different port:
 
 ```bash
